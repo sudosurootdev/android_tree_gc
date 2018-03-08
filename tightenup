@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Check for default manifest and set TOP if it exists where it should be
+if [ -x .repo/manifests/default.xml ]; then
+	TOP=${PWD}
+
+# Run on default manifest
+	for i in `cat .repo/manifests/default.xml | sed 's/<!--.*-->//g' | grep "<project" | sed 's/.*project //g' | sed 's/[ ]*\/*>//g' | sed 's/groups=["a-zA-Z0-9,\-]*//g' | sed 's/.*path=\"//g' | sed 's/".*//g'`; do cd $i; echo "Cleaning "$i" .git Directory"; git prune; wait$!; git gc; wait$!; cd $TOP; done
+
+# If there is a snippets directory run on all manifests there too
+		if [ -d .repo/snippets ]; then
+			for i in `cat .repo/snippets/*.xml | sed 's/<!--.*-->//g' | grep "<project" | sed 's/.*project //g' | sed 's/[ ]*\/*>//g' | sed 's/groups=["a-zA-Z0-9,\-]*//g' | sed 's/.*path=\"//g' | sed 's/".*//g'`; do cd $i; echo "Cleaning "$i" .git Directory"; git prune; wait$!; git gc; wait$!; cd $TOP; done
+		fi
+
+# If there is a local_manifests directory run on all manifests there too
+		if [ -d .repo/local_manifests ]; then
+			for i in `cat .repo/local_manifests/*.xml | sed 's/<!--.*-->//g' | grep "<project" | sed 's/.*project //g' | sed 's/[ ]*\/*>//g' | sed 's/groups=["a-zA-Z0-9,\-]*//g' | sed 's/.*path=\"//g' | sed 's/".*//g'`; do cd $i; echo "Cleaning "$i" .git Directory"; git prune; wait$!; git gc; wait$!; cd $TOP; done
+		fi
+
+else
+	echo "You must be at the top of your Android Build Directory!"
+	error 1
+fi
